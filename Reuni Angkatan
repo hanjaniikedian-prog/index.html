@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>REUNI ANGKATAN 90 | Halaman Petugas</title>
+  
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7f5;
+      color: #20352c;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* BANNER UTAMA */
+    .banner-container {
+      width: 100%;
+      background: linear-gradient(135deg, #053b26 0%, #087447 100%);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      color: white;
+    }
+
+    .banner-left h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+
+    .banner-left p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      opacity: 0.85;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .banner-right {
+      text-align: right;
+      border-left: 2px solid rgba(255, 255, 255, 0.2);
+      padding-left: 16px;
+    }
+
+    .banner-right h3 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .banner-right p {
+      margin: 2px 0 0;
+      font-size: 10px;
+      opacity: 0.8;
+    }
+
+    /* KONTENER UTAMA */
+    .main-wrapper {
+      width: 100%;
+      max-width: 560px;
+      padding: 20px 16px;
+      flex: 1;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e1e8e4;
+      margin-bottom: 20px;
+    }
+
+    /* HEADER CARD */
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+    }
+
+    .header-title {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .icon-box {
+      background: #087447;
+      color: white;
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(8, 116, 71, 0.2);
+    }
+
+    .header-text h2 {
+      margin: 0;
+      font-size: 17px;
+      color: #111;
+      font-weight: 700;
+    }
+
+    .header-text p {
+      margin: 3px 0 0;
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* DROPDOWN PETUGAS - HILANGKAN PANAH GANDA DENGAN APPEARANCE NONE */
+    .select-petugas {
+      background: #0d2b45 url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 10px center;
+      background-size: 18px;
+      color: #ffffff;
+      border: none;
+      border-radius: 30px;
+      padding: 10px 32px 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      box-shadow: 0 4px 12px rgba(13, 43, 69, 0.25);
+    }
+
+    /* AREA SCANNER KAMERA */
+    .scanner-box {
+      position: relative;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+      border-radius: 16px;
+      overflow: hidden;
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #d9e4dd;
+      margin-bottom: 16px;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    #reader {
+      width: 100%;
+      height: 100%;
+    }
+
+    .scanner-placeholder {
+      text-align: center;
+      color: #ffffff;
+      padding: 20px;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* BINGKAI KOTAK PUTUS-PUTUS & POSISI IKON */
+    .scanner-frame {
+      position: absolute;
+      width: 75%;
+      height: 55%;
+      border: 2px dashed rgba(8, 116, 71, 0.6);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      top: 15px;
+    }
+
+    .qr-glass-icon {
+      font-size: 32px;
+      margin-bottom: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 12px;
+      border-radius: 10px;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      margin-top: 10px;
+    }
+
+    .scan-text {
+      font-size: 12px;
+      color: #ccc;
+      margin-top: 4px;
+      margin-bottom: 15px;
+    }
+
+    /* TOMBOL BUKA KAMERA DI LUAR GARIS BINGKAI */
+    .btn-start-scan {
+      background: #087447;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(8, 116, 71,.4);
+      transition: background 0.2s;
+      z-index: 5;
+      margin-top: 120px; /* Mendorong tombol ke bawah agar pas di luar garis */
+    }
+
+    .btn-start-scan:hover {
+      background: #075438;
+    }
+
+    /* DIVIDER */
+    .divider {
+      text-align: center;
+      margin: 18px 0;
+      position: relative;
+    }
+
+    .divider::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: #e1e8e4;
+      z-index: 1;
+    }
+
+    .divider span {
+      position: relative;
+      z-index: 2;
+      background: #ffffff;
+      padding: 0 12px;
+      color: #718078;
+      font-size: 12px;
+    }
+
+    /* MANUAL INPUT */
+    .manual-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .manual-icon {
+      background: #e7f2eb;
+      color: #087447;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .manual-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #20352c;
+    }
+
+    .input-token {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #d9e4dd;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 12px;
+      background: #fafcfb;
+    }
+
+    .input-token:focus {
+      border-color: #087447;
+      background: #fff;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: #0d2b45;
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(13, 43, 69, 0.2);
+    }
+
+    .btn-submit:hover {
+      background: #113656;
+    }
+
+    /* KOTAK HASIL */
+    #hasil {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      display: none;
+    }
+
+    /* KOTAK PETUNJUK PETUGAS */
+    .info-card {
+      background: #eef6f2;
+      border-radius: 16px;
+      padding: 18px;
+      border: 1px solid #d2e4d9;
+    }
+
+    .info-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #087447;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .info-step {
+      display: flex;
+      gap: 10px;
+      font-size: 12px;
+      color: #20352c;
+      margin-bottom: 8px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      background: #087447;
+      color: white;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    /* FOOTER */
+    footer {
+      width: 100%;
+      background: #0d2b45;
+      color: #ffffff;
+      text-align: center;
+      padding: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER BANNER -->
+  <div class="banner-container">
+    <div class="banner-left">
+      <h1>INDOVEX 2026</h1>
+      <p>FORUM & EXPO</p>
+    </div>
+    <div class="banner-right">
+      <h3>BANGUN DESA,</h3>
+      <p>BANGUN INDONESIA</p>
+    </div>
+  </div>
+
+  <div class="main-wrapper">
+    <div class="card">
+      
+      <!-- HEADER PETUGAS -->
+      <div class="card-header">
+        <div class="header-title">
+          <div class="icon-box">👥</div>
+          <div class="header-text">
+            <h2>Halaman Petugas</h2>
+            <p>Scan QR Code tiket peserta</p>
+          </div>
+        </div>
+        <select id="petugas" class="select-petugas" onchange="simpanPetugas()">
+          <option value="">Pilih Petugas ▾</option>
+        </select>
+      </div>
+
+      <!-- AREA CAMERA SCANNER -->
+      <div class="scanner-box">
+        <div id="reader"></div>
+        <div id="scannerPlaceholder" class="scanner-placeholder">
+          <div class="scanner-frame">
+            <div class="qr-glass-icon">🔲</div>
+            <div class="scan-text">Scan QR Code di sini</div>
+          </div>
+          <button class="btn-start-scan" onclick="mulaiScan()">📷 Buka Kamera</button>
+        </div>
+      </div>
+
+      <div class="divider">
+        <span>atau</span>
+      </div>
+
+      <!-- INPUT MANUAL -->
+      <div class="manual-group">
+        <div class="manual-icon">🔍</div>
+        <div class="manual-title">Input Token QR Secara Manual</div>
+      </div>
+      
+      <input type="text" id="tokenManual" class="input-token" placeholder="Masukkan token QR peserta">
+      <button class="btn-submit" onclick="prosesManual()">
+        <span>✈️</span> Cek Peserta
+      </button>
+
+      <!-- HASIL VALIDASI -->
+      <div id="hasil"></div>
+
+    </div>
+
+    <!-- PETUNJUK PETUGAS -->
+    <div class="info-card">
+      <div class="info-header">
+        <span style="font-size:18px;">ℹ️</span> Petunjuk untuk Petugas
+      </div>
+      <div class="info-step">
+        <div class="step-num">1</div>
+        <div>Pilih nama petugas di pojok kanan atas.</div>
+      </div>
+      <div class="info-step">
+        <div class="step-num">2</div>
+        <div>Scan QR Code pada tiket peserta atau masukkan token secara manual.</div>
+      </div>
+      <div class="info-step">
+        <div class="step-num">3</div>
+        <div>Pastikan status check-in berhasil muncul.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    Teknologi by EVENTURE
+  </footer>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxGU9s-xLwP4hjNOy00M8eQRryktKFpsy-SSGrhfDOkSpO3eW6LL4bvk80Bj6NCJIUV/exec";
+    let html5QrCode = null;
+
+    window.onload = function() {
+      const script = document.createElement('script');
+      script.src = API_URL + "?action=petugas&callback=indovexCallback";
+      document.body.appendChild(script);
+    };
+
+    window.indovexCallback = function(res) {
+      // 1. Jika data yang dikirim adalah list petugas
+      if(res && res.data && Array.isArray(res.data) && !res.pesan) {
+        const select = document.getElementById("petugas");
+        select.innerHTML = '<option value="">Pilih Petugas ▾</option>';
+        res.data.forEach(p => {
+          let opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = p.nama;
+          select.appendChild(opt);
+        });
+        const savedPetugas = localStorage.getItem("indovex_petugas");
+        if(savedPetugas) { select.value = savedPetugas; }
+        return;
+      }
+
+      // 2. Tanggapan hasil proses check-in / validasi token
+      const hasilDiv = document.getElementById("hasil");
+      hasilDiv.style.display = "block";
+      
+      if(res && res.berhasil) {
+        hasilDiv.style.background = "#d4edda";
+        hasilDiv.style.color = "#155724";
+        // Menampilkan pesan sukses beserta nama peserta jika dikirim dari backend
+        hasilDiv.textContent = "✅ " + (res.pesan || "Check-in berhasil!");
+        document.getElementById("tokenManual").value = "";
+      } else {
+        hasilDiv.style.background = "#f8d7da";
+        hasilDiv.style.color = "#721c24";
+        // Menampilkan pesan gagal (misal: "Token tidak ditemukan" atau "Sudah check-in")
+        hasilDiv.textContent = "❌ " + (res && res.pesan ? res.pesan : "Gagal memproses check-in.");
+      }
+    };
+
+    function simpanPetugas() {
+      const p = document.getElementById("petugas").value;
+      if(p) {
+        localStorage.setItem("indovex_petugas", p);
+      }
+    }
+
+    function mulaiScan() {
+      const petugasId = document.getElementById("petugas").value || localStorage.getItem("indovex_petugas");
+      if(!petugasId) {
+        alert("Silakan pilih nama petugas terlebih dahulu di pojok kanan atas!");
+        return;
+      }
+
+      document.getElementById("scannerPlaceholder").style.display = "none";
+      
+      if(!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+      }
+
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 200 },
+        qrCodeMessage => {
+          html5QrCode.stop();
+          document.getElementById("scannerPlaceholder").style.display = "flex";
+          kirimCheckIn(qrCodeMessage, petugasId);
+        },
+        errorMessage => {}
+      ).catch(err => {
+        alert("Akses kamera gagal: " + err);
+        document.getElementById("scannerPlaceholder").style.display = "flex";
+      });
+    }
+
+    function prosesManual() {
+      const token = document.getElementById("tokenManual").value.trim();
+      const petugasId = document.getElementById("petugas").value || localStorage.getItem("indovex_petugas");
+      
+      if(!petugasId) { alert("Pilih nama petugas terlebih dahulu!"); return; }
+      if(!token) { alert("Masukkan token QR peserta!"); return; }
+
+      kirimCheckIn(token, petugasId);
+    }
+
+    function kirimCheckIn(token, petugasId) {
+      const hasilDiv = document.getElementById("hasil");
+      hasilDiv.style.display = "block";
+      hasilDiv.style.background = "#fff3cd";
+      hasilDiv.style.color = "#856404";
+      hasilDiv.textContent = "Sedang memvalidasi tiket...";
+
+      const script = document.createElement('script');
+      script.src = `${API_URL}?action=checkin&token=${encodeURIComponent(token)}&petugas=${encodeURIComponent(petugasId)}&callback=indovexCallback`;
+      document.body.appendChild(script);
+    }
+  </script>
+</body>
+</html>
