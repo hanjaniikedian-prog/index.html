@@ -528,7 +528,7 @@
       }
     }
 
-    function mulaiScan() {
+        function mulaiScan() {
       const petugasId = document.getElementById("petugas").value || localStorage.getItem("indovex_petugas");
       if(!petugasId) {
         alert("Silakan pilih nama petugas terlebih dahulu di pojok kanan atas!");
@@ -541,13 +541,19 @@
         html5QrCode = new Html5Qrcode("reader");
       }
 
+      // PERBAIKAN LOGIKA: Kamera tetap menyala sampai QR Code sukses terbaca
       html5QrCode.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: 200 },
+        { fps: 10, qrbox: 220 },
         qrCodeMessage => {
-          html5QrCode.stop();
-          document.getElementById("scannerPlaceholder").style.display = "flex";
-          kirimCheckIn(qrCodeMessage, petugasId);
+          // Kamera BARU AKAN BERHENTI setelah sukses membaca token QR Code peserta
+          html5QrCode.stop().then(() => {
+            document.getElementById("scannerPlaceholder").style.display = "flex";
+            kirimCheckIn(qrCodeMessage, petugasId);
+          }).catch(err => {
+            document.getElementById("scannerPlaceholder").style.display = "flex";
+            kirimCheckIn(qrCodeMessage, petugasId);
+          });
         },
         errorMessage => {}
       ).catch(err => {
@@ -555,6 +561,7 @@
         document.getElementById("scannerPlaceholder").style.display = "flex";
       });
     }
+
 
     function prosesManual() {
       const token = document.getElementById("tokenManual").value.trim();
