@@ -530,7 +530,7 @@
       }
     }
 
-    function mulaiScan() {
+        function mulaiScan() {
       const petugasId = document.getElementById("petugas").value || localStorage.getItem("indovex_petugas");
       if(!petugasId) {
         alert("Silakan pilih nama petugas terlebih dahulu di pojok kanan atas!");
@@ -543,20 +543,30 @@
         html5QrCode = new Html5Qrcode("reader");
       }
 
+      // Optimasi penanganan box objek untuk kelancaran aspek rasio kamera ponsel
       html5QrCode.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: 200 },
+        { 
+          fps: 10, 
+          qrbox: function(width, height) {
+            const minEdge = Math.min(width, height);
+            const qrboxSize = Math.floor(minEdge * 0.6);
+            return { width: qrboxSize, height: qrboxSize };
+          }
+        },
         qrCodeMessage => {
-          html5QrCode.stop();
-          document.getElementById("scannerPlaceholder").style.display = "flex";
-          kirimCheckIn(qrCodeMessage, petugasId);
+          html5QrCode.stop().then(() => {
+            document.getElementById("scannerPlaceholder").style.display = "flex";
+            kirimCheckIn(qrCodeMessage, petugasId);
+          });
         },
         errorMessage => {}
       ).catch(err => {
-        alert("Akses kamera gagal: " + err);
+        alert("Akses kamera gagal dibuka. Pastikan Anda memberikan izin kamera pada browser: " + err);
         document.getElementById("scannerPlaceholder").style.display = "flex";
       });
     }
+
 
     function prosesManual() {
       const token = document.getElementById("tokenManual").value.trim();
