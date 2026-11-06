@@ -479,8 +479,8 @@
     Teknologi by EVENTURE
   </footer>
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxGU9s-xLwP4hjNOy00M8eQRryktKFpsy-SSGrhfDOkSpO3eW6LL4bvk80Bj6NCJIUV/exec";
+      // PERBAIKAN: Masukkan URL Deployment Apps Script Resmi Anda secara lengkap di bawah ini
+    const API_URL = "https://google.com";
     let html5QrCode = null;
 
     // Menarik data petugas secara aman menggunakan Fetch API
@@ -508,6 +508,7 @@
         })
         .catch(err => {
           select.innerHTML = '<option value="">Eror Koneksi</option>';
+          console.error("Kesalahan koneksi data petugas:", err);
         });
     };
 
