@@ -1,1 +1,2 @@
-indovex-qr-scanner
+EVENTURE-qr-scanner
+EVENTURE 2026 QR Check-In
