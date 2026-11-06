@@ -483,67 +483,52 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbxGU9s-xLwP4hjNOy00M8eQRryktKFpsy-SSGrhfDOkSpO3eW6LL4bvk80Bj6NCJIUV/exec";
     let html5QrCode = null;
 
+    // Menarik data petugas secara aman menggunakan Fetch API
     window.onload = function() {
-      const script = document.createElement('script');
-      script.src = API_URL + "?action=petugas&callback=indovexCallback";
-      document.body.appendChild(script);
-    };
+      const select = document.getElementById("petugas");
+      if (!select) return;
+      select.innerHTML = '<option value="">Memuat panitia...</option>';
 
-    window.indovexCallback = function(res) {
-      // 1. Jika data yang dikirim adalah list petugas
-      if(res && res.data && Array.isArray(res.data) && !res.pesan) {
-        const select = document.getElementById("petugas");
-        select.innerHTML = '<option value="">Pilih Petugas ▾</option>';
-        res.data.forEach(p => {
-          let opt = document.createElement("option");
-          opt.value = p.id;
-          opt.textContent = p.nama;
-          select.appendChild(opt);
+      fetch(`${API_URL}?action=petugas`)
+        .then(response => response.json())
+        .then(res => {
+          select.innerHTML = '<option value="">Pilih Petugas ▾</option>';
+          if (res && res.berhasil && Array.isArray(res.data)) {
+            res.data.forEach(p => {
+              let opt = document.createElement("option");
+              opt.value = p.id;
+              opt.textContent = p.nama;
+              select.appendChild(opt);
+            });
+            const savedPetugas = localStorage.getItem("indovex_petugas");
+            if (savedPetugas) { select.value = savedPetugas; }
+          } else {
+            select.innerHTML = '<option value="">Gagal memuat daftar</option>';
+          }
+        })
+        .catch(err => {
+          select.innerHTML = '<option value="">Eror Koneksi</option>';
         });
-        const savedPetugas = localStorage.getItem("indovex_petugas");
-        if(savedPetugas) { select.value = savedPetugas; }
-        return;
-      }
-
-      // 2. Tanggapan hasil proses check-in / validasi token
-      const hasilDiv = document.getElementById("hasil");
-      hasilDiv.style.display = "block";
-      
-      if(res && res.berhasil) {
-        hasilDiv.style.background = "#d4edda";
-        hasilDiv.style.color = "#155724";
-        // Menampilkan pesan sukses beserta nama peserta jika dikirim dari backend
-        hasilDiv.textContent = "✅ " + (res.pesan || "Check-in berhasil!");
-        document.getElementById("tokenManual").value = "";
-      } else {
-        hasilDiv.style.background = "#f8d7da";
-        hasilDiv.style.color = "#721c24";
-        // Menampilkan pesan gagal (misal: "Token tidak ditemukan" atau "Sudah check-in")
-        hasilDiv.textContent = "❌ " + (res && res.pesan ? res.pesan : "Gagal memproses check-in.");
-      }
     };
 
     function simpanPetugas() {
       const p = document.getElementById("petugas").value;
-      if(p) {
-        localStorage.setItem("indovex_petugas", p);
-      }
+      if (p) { localStorage.setItem("indovex_petugas", p); }
     }
 
-        function mulaiScan() {
+    function mulaiScan() {
       const petugasId = document.getElementById("petugas").value || localStorage.getItem("indovex_petugas");
-      if(!petugasId) {
+      if (!petugasId) {
         alert("Silakan pilih nama petugas terlebih dahulu di pojok kanan atas!");
         return;
       }
 
       document.getElementById("scannerPlaceholder").style.display = "none";
       
-      if(!html5QrCode) {
+      if (!html5QrCode) {
         html5QrCode = new Html5Qrcode("reader");
       }
 
-      // Optimasi penanganan box objek untuk kelancaran aspek rasio kamera ponsel
       html5QrCode.start(
         { facingMode: "environment" },
         { 
@@ -562,11 +547,50 @@
         },
         errorMessage => {}
       ).catch(err => {
-        alert("Akses kamera gagal dibuka. Pastikan Anda memberikan izin kamera pada browser: " + err);
+        alert("Akses kamera gagal dibuka: " + err);
         document.getElementById("scannerPlaceholder").style.display = "flex";
       });
     }
 
+    function prosesManual() {
+      const token = document.getElementById("tokenManual").value.trim();
+      const petugasId = document.getElementById("petugas").value || localStorage.getItem("indovex_petugas");
+      
+      if (!petugasId) { alert("Pilih nama petugas terlebih dahulu!"); return; }
+      if (!token) { alert("Masukkan token QR peserta!"); return; }
+
+      kirimCheckIn(token, petugasId);
+    }
+
+    function kirimCheckIn(token, petugasId) {
+      const hasilDiv = document.getElementById("hasil");
+      if (!hasilDiv) return;
+      
+      hasilDiv.style.display = "block";
+      hasilDiv.style.background = "#fff3cd";
+      hasilDiv.style.color = "#856404";
+      hasilDiv.textContent = "Sedang memvalidasi tiket...";
+
+      fetch(`${API_URL}?action=checkin&token=${encodeURIComponent(token)}&petugas=${encodeURIComponent(petugasId)}`)
+        .then(response => response.json())
+        .then(res => {
+          if (res && res.berhasil) {
+            hasilDiv.style.background = "#d4edda";
+            hasilDiv.style.color = "#155724";
+            hasilDiv.textContent = "✅ " + (res.pesan || "Check-in berhasil!");
+            document.getElementById("tokenManual").value = "";
+          } else {
+            hasilDiv.style.background = "#f8d7da";
+            hasilDiv.style.color = "#721c24";
+            hasilDiv.textContent = "❌ " + (res && res.pesan ? res.pesan : "Gagal memproses check-in.");
+          }
+        })
+        .catch(err => {
+          hasilDiv.style.background = "#f8d7da";
+          hasilDiv.style.color = "#721c24";
+          hasilDiv.textContent = "❌ Terjadi gangguan server database.";
+        });
+    }
 
     function prosesManual() {
       const token = document.getElementById("tokenManual").value.trim();
